@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/recipe")
 public class MainRecipeController{
 
-    @
+    
     @GetMapping("")
     public String mainget(){
         return "hello World";
