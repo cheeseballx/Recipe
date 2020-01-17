@@ -21,4 +21,8 @@ public class Recipe{
     public void setIngridents( ArrayList<Ingrident> ingridents) { this.ingridents = ingridents; }
     public void setTextParts( ArrayList<TextPart> textParts) { this.textParts = textParts; }
     public void setTags(ArrayList<Tag> tags) { this.tags = tags; }
+
+    public Ingrident getIngrident(int index, float mult){
+        return this.ingridents.get(index);
+    }
 }
