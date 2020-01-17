@@ -1,5 +1,7 @@
 package de.andy.web.recipe.controller;
 
+import de.andy.web.recipe.model.Recipe;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,8 +16,10 @@ public class RecipeController{
         return "query database";
     }
 
-    @PostMapping
-    public void addarecipe(@B)
+    @PostMapping("")
+    public String addarecipe(Recipe recipe){
+        return "done";
+    }
 
     @GetMapping("/{id}")
 	public String index(Long id) {
