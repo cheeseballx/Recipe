@@ -29,12 +29,13 @@ public class SwaggerConfiguration {
         Server server1 = new Server();
         Server server2 = new Server();
         server1.setUrl("http://localhost:3001");
-        server2.setUrl("http://127.0.0.1:3001");
+        server2.setUrl("http://192.168.178.40:3001");
         
         ArrayList<Server> servers = new ArrayList<>();
         servers.add(server1);
         servers.add(server2);
 
-        return new OpenAPI().info(info).servers(servers);
+        return new OpenAPI().info(info)
+                            .servers(servers);
     }
 }
