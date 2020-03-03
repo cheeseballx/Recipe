@@ -13,7 +13,7 @@ public class RecipeController{
 
     @GetMapping("")
     public String getallreciepes(){
-        return "query database";
+        return "query sds";
     }
 
     @PostMapping("")
@@ -23,7 +23,7 @@ public class RecipeController{
 
     @GetMapping("/{id}")
 	public String index(Long id) {
-		return "rerere " + id;
+		return "refill quark new id  " + id;
 	}
 
 }
