@@ -1,7 +1,9 @@
 package de.andy.web.recipe.controller;
 
+import de.andy.web.recipe.database.UnitInterface;
 import de.andy.web.recipe.model.Recipe;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/recipe")
 public class RecipeController{
+
+    @Autowired
+    UnitInterface UnitDB;
 
     @GetMapping("")
     public String getallreciepes(){
