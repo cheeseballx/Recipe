@@ -1,7 +1,5 @@
 package de.andy.web.recipe.model;
 
-import de.andy.web.recipe.model.Unit;
-
 public class Ingrident{
 
     private long id;

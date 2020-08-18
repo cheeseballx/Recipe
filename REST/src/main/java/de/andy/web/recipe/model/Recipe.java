@@ -2,8 +2,6 @@ package de.andy.web.recipe.model;
 
 import java.util.ArrayList;
 
-import de.andy.web.recipe.model.Ingrident;
-
 public class Recipe{
 
 
