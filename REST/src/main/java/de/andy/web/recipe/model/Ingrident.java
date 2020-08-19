@@ -1,28 +1,36 @@
 package de.andy.web.recipe.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Ingrident{
 
-    private long id;
-    private float value;
-    private Unit unit;
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
 
-    public Ingrident( float value, Unit unit){
-        this.id = -1L;
-        this.value = value;
-        this.unit = unit;
-    }
+    @Column(nullable = false)
+    private String name;
     
-    public long getId() { return id; }
-    public float getValue(){ return this.value; }
-    public Unit getUnit() { return this.unit; }
+    @Column(nullable = false)
+    private Long unit_id;
 
-    public void setId(long id) { this.id = id; }
-    public void setValue(float value){ this.value = value; }
-    public void setUnit(Unit unit) { this.unit = unit; }
+    @Column(nullable = true)
+    private String description;
 
-    @Override
-    public String toString(){
-        return String.format("%s [%s]", this.value,this.unit);
-    }
+    public Ingrident(){};
+    
+    public Long getId() { return id; }
+    public String getName(){ return this.name; }
+    public Long getUnit_id() { return this.unit_id; }
+    public String getDescription() {return this.description; }
 
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name){ this.name = name; }
+    public void setUnit_id(Long unit_id) { this.unit_id = unit_id; }
+    public void setDescription(String description) {this.description = description; }
 }

@@ -16,8 +16,7 @@ repositories {
 dependencies {
 	implementation 'org.springdoc:springdoc-openapi-ui:1.2.26'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	runtimeOnly 'org.springframework.boot:spring-boot-devtools:2.1.8.RELEASE'
-
+	
 	implementation 'org.springframework.boot:spring-boot-starter-tomcat'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.1.5.RELEASE'
 	implementation 'org.json:json:20190722'
