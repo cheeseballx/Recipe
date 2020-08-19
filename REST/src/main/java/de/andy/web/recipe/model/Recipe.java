@@ -1,26 +1,41 @@
 package de.andy.web.recipe.model;
 
-import java.util.ArrayList;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
+@Entity
 public class Recipe{
 
-
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-    private ArrayList<Ingrident> ingridents;
-    private ArrayList<TextPart> textParts;
-    private ArrayList<Tag> tags;
 
-    public Long getId(){ return id;}
-    public ArrayList<Ingrident> getIngridents(){ return ingridents; }
-    public ArrayList<TextPart> getTextParts(){ return textParts; }
-    public ArrayList<Tag> getTags() { return tags;}
+    @Column(nullable = false)
+    private String name;
 
-    public void setId( Long id){ this.id = id; }
-    public void setIngridents( ArrayList<Ingrident> ingridents) { this.ingridents = ingridents; }
-    public void setTextParts( ArrayList<TextPart> textParts) { this.textParts = textParts; }
-    public void setTags(ArrayList<Tag> tags) { this.tags = tags; }
+    @Column(nullable = true)
+    private String longname;
 
-    public Ingrident getIngrident(int index, float mult){
-        return this.ingridents.get(index);
-    }
+    @Column(nullable = true)
+    private String description;
+
+    @Column(nullable = true)
+    private String imagepath;
+
+    public Recipe() {}
+
+    public Long getId() { return id;}
+    public String getName() { return name;}
+    public String getLongname() { return longname;}
+    public String getDescription() { return description; }
+    public String getImagepath() {return imagepath;}
+
+    public void setId(Long id) { this.id = id;}
+    public void setName(String name) { this.name = name; }
+    public void setLongname(String longname) { this.longname = longname; }
+    public void setDescription(String description) { this.description = description;}
+    public void setImagepath(String imagepath) {this.imagepath = imagepath;}
 }
