@@ -20,7 +20,6 @@ import de.andy.web.recipe.database.IngridentInterface;
 import de.andy.web.recipe.database.UnitInterface;
 import de.andy.web.recipe.model.Ingrident;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
