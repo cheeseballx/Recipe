@@ -6,6 +6,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import javax.persistence.OneToMany;
+
+import java.util.Set;
+
 @Entity
 public class Recipe{
 
@@ -25,13 +29,27 @@ public class Recipe{
     @Column(nullable = true)
     private String imagepath;
 
-    public Recipe() {}
+    //mapped by others
+    @OneToMany(mappedBy="recipe")
+    private Set<Component> components;
 
-    public Long getId() { return id;}
-    public String getName() { return name;}
-    public String getLongname() { return longname;}
-    public String getDescription() { return description; }
-    public String getImagepath() {return imagepath;}
+    //just use for spring
+    protected Recipe() {}
+
+    //Constructor custom
+    public Recipe(String name, String longname, String description) {
+        this.name = name;
+        this.longname = longname;
+        this.description = description;
+    }
+
+
+    public Long getId() { return this.id;}
+    public String getName() { return this.name;}
+    public String getLongname() { return this.longname;}
+    public String getDescription() { return this.description; }
+    public String getImagepath() { return this.imagepath; }
+    public Set<Component> getComponents() { return this.components; }
 
     public void setId(Long id) { this.id = id;}
     public void setName(String name) { this.name = name; }

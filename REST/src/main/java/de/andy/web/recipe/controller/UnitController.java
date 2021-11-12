@@ -29,17 +29,17 @@ public class UnitController{
     UnitInterface UnitDB;
 
     //GET ALL
+    @GetMapping(value = "", produces = "application/json")
     @Operation( summary = "Show all Units as a list here", 
                 description = "no need for params. It just returns a list, but if you want to give optionals")
-    @GetMapping(value = "", produces = "application/json")
     public List<Unit> getAllUnits(){
         return UnitDB.findAll();
     }
 
     //GET ONE
+    @GetMapping(value="/{id}", produces = "application/json")
     @Operation( summary = "Shows a Unit selection comes by ID", 
                 description = "id for ")
-    @GetMapping(value="/{id}", produces = "application/json")
     @ApiResponse(responseCode = "204",description = "ID is not found")
     @ApiResponse(responseCode = "200",description = "found Unit")
 	public ResponseEntity<Unit> getUnit(@PathVariable Long id) {
@@ -49,23 +49,21 @@ public class UnitController{
         else
             return new ResponseEntity<Unit>(HttpStatus.NO_CONTENT);
     }
-    @Operation( summary = "Adds a Unit or Overwirtes given Unit", 
-                description = "adding a new unit to db or in case of id is given overwrite an existing one")
+    
     
     //POST ONE
     @PostMapping("")
+    @Operation( summary = "Adds a Unit or Overwirtes given Unit", 
+                description = "adding a new unit to db or in case of id is given overwrite an existing one")
     @ApiResponse(responseCode = "200",description = "newly created ID gets returned")
     @ApiResponse(responseCode = "400",description = "Some error in request")
     public ResponseEntity<String> addUnit(@RequestBody Unit unit) {
         if(unit.getId() != null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot send ID within request");
 
-        if(unit.getName()==null || unit.getBase_unit()==null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing name or base_unit");
+        Unit retUnit = UnitDB.save(unit);
 
-        UnitDB.save(unit);
-
-        return new ResponseEntity<String>(unit.getId()+"",HttpStatus.OK);
+        return new ResponseEntity<String>(retUnit.getId()+"",HttpStatus.OK);
     }
 
     //DELETE ONE

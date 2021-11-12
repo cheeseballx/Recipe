@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import de.andy.web.recipe.database.IngridentInterface;
 import de.andy.web.recipe.database.UnitInterface;
@@ -61,23 +63,22 @@ public class IngridentController{
     //POST ONE
     @Operation( summary = "Adds a Ingrident", 
                 description = "adding a new Ingrident to db")
-    @PostMapping(value = "", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "", produces = "application/json")
     @ApiResponse(responseCode = "200",description = "newly created ID gets returned")
     @ApiResponse(responseCode = "400",description = "Some error in request")
-    public ResponseEntity<String> addIngridient(@RequestBody Ingrident ingrident) {
-        if(ingrident.getId() != null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot send ID within request");
+    public ResponseEntity<String> addIngridient(@RequestParam String name,
+                                                @RequestParam String unit,
+                                                @RequestParam(required = false) String description) {
 
-        if(ingrident.getName()==null || ingrident.getUnit_id()==null)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing name or base_unit");
+        Ingrident ingrident = new Ingrident(name, unit, description);
+        Ingrident returnIngrident = IngridentDB.save(ingrident);
 
-        Long id = ingrident.getUnit_id();
-        if (!UnitDB.findById(id).isPresent())
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unit does not exist");
+        JSONObject  obj = new JSONObject();
+        obj.put("ID",returnIngrident.getId());
+        obj.put("status",1);
+        obj.put("msg","object created successfully");
 
-        IngridentDB.save(ingrident);
-
-        return new ResponseEntity<String>(ingrident.getId()+"",HttpStatus.OK);
+        return new ResponseEntity<>(obj.toString(),HttpStatus.OK);
     }
 
     //UPDATE ONE
