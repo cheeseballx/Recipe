@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import de.andy.web.recipe.database.IngridentInterface;
-import de.andy.web.recipe.database.UnitInterface;
 import de.andy.web.recipe.model.Ingrident;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,9 +28,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RequestMapping("/v1/Ingrident")
 @Tag(name = "Ingridents", description = "Controlling the Ingridents")
 public class IngridentController{
-
-    @Autowired
-    UnitInterface UnitDB;
 
     @Autowired
     IngridentInterface IngridentDB;

@@ -1,7 +1,9 @@
 package de.andy.web.recipe.controller;
 
 import de.andy.web.recipe.database.RecipeInterface;
+import de.andy.web.recipe.database.TextpartInterface;
 import de.andy.web.recipe.model.Recipe;
+import de.andy.web.recipe.model.Textpart;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,70 +29,76 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/v1/Recipe")
-@Tag(name = "Recipes", description = "Controlling the Recipes")
-public class RecipeController{
+@RequestMapping("/v1/Textpart")
+@Tag(name = "Textpart", description = "Controlling the Textparts")
+public class TextpartController{
 
-    @Autowired
-    RecipeInterface RecipeDB;
-
-    //GET ALL
-    @Operation( summary = "Show all Recipes as a list here", 
-                description = "no need for params. It just returns a list")
-    @GetMapping(value = "", produces = "application/json")
-    @ApiResponse(responseCode = "200", description = "return Jsonlist" )
-    public List<Recipe> getAllRecipes(){
-        return RecipeDB.findAll();
-    }
+    @Autowired TextpartInterface TextpartDB;
+    @Autowired RecipeInterface RecipeDB;
 
     //GET ONE
-    @Operation( summary = "Get a specific Recipe",
-                description = "give the id of the recipe and get it from database")
+    @Operation( summary = "Get a specific Textpart",
+                description = "by putting in the id youre getting a textpart")
     @GetMapping( value="/{id}", produces = "application/json")
     @ApiResponse(responseCode = "204",description = "ID is not found")
-    @ApiResponse(responseCode = "200",description = "found Recipe with that id -> return it")
-    public ResponseEntity<Recipe> getRecipe(@PathVariable Long id){
-        Optional<Recipe> opt = RecipeDB.findById(id);
+    @ApiResponse(responseCode = "200",description = "found Textpart with that id -> return it")
+    public ResponseEntity<Textpart> getTedxtpart(@PathVariable Long id){
+        Optional<Textpart> opt = TextpartDB.findById(id);
         if (opt.isPresent())
-            return new ResponseEntity<Recipe>(opt.get(),HttpStatus.OK);
+            return new ResponseEntity<Textpart>(opt.get(),HttpStatus.OK);
         else
-            return new ResponseEntity<Recipe>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<Textpart>(HttpStatus.NO_CONTENT);
     }
 
     //POST ONE
-    @Operation( summary = "Adds a Recipe", 
+    @Operation( summary = "Adds a Textpart", 
                 description = "adding a new Recipe to db")
     @PostMapping(value = "", produces = "application/json")
     @ApiResponse(responseCode = "200",description = "newly created ID gets returned")
     @ApiResponse(responseCode = "400",description = "Some error in request")
-    public ResponseEntity<String> addIngridient(@RequestParam String name,
-                                                @RequestParam(required = false) String longname,
-                                                @RequestParam(required = false) String description){
+    public ResponseEntity<String> addTextpart  (@RequestParam Long recipe_id,
+                                                @RequestParam Integer sort,
+                                                @RequestParam String name,
+                                                @RequestParam String text){
         
-        Recipe recipe = new Recipe(name, longname, description);
-        Recipe returnRecipe = RecipeDB.save(recipe);
+        Optional<Recipe> optRecipe = RecipeDB.findById(recipe_id);
+        
+        JSONObject  obj;
 
-        return new ResponseEntity<String>(returnRecipe.getId()+"",HttpStatus.OK);
+        if (!optRecipe.isPresent()){
+            obj = new JSONObject();
+            obj.put("status", 0);
+            obj.put("msg", "recipeid is missing or wrong");
+            return new ResponseEntity<>(obj.toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        Textpart textpart = new Textpart(optRecipe.get(), name, sort, text);
+        Textpart textpartRet = TextpartDB.save(textpart);
+
+        obj = new JSONObject();
+        obj.put("status", 1);
+        obj.put("msg", "sucessfull");
+        obj.put("newObj",textpartRet);
+        return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
     }
 
     //UPDATE
     //UPDATE ONE
-    @Operation (summary = "change a recipe by changing some informations")
+    @Operation (summary = "change a textpart by changing some informations")
     @PatchMapping(value = "", consumes = "application/json", produces = "application/json")
-    @ApiResponse(responseCode = "200", description = "Sucessfully changed recipe" )
-    public ResponseEntity<String> updateRecipe(@RequestBody Recipe recipe){
+    @ApiResponse(responseCode = "200", description = "Sucessfully changed textpart" )
+    public ResponseEntity<String> updateTextpart(@RequestBody Textpart textpart){
         
-        if(recipe.getId() == null)
+        if(textpart.getID() == null)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new JSONObject().put("status", 0).put("msg", "missing id").toString());
         
-        if(!RecipeDB.existsById(recipe.getId())){
+        if(!TextpartDB.existsById(textpart.getID())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 new JSONObject().put("status", 0).put("msg", "id does not exists").toString());
         }
 
-       
-        Recipe returnRecipe = RecipeDB.save(recipe);
+       Textpart returnTextpart = TextpartDB.save(textpart);
         
         JSONObject ret = new JSONObject();
         ret.put("msg", "successfull changed");

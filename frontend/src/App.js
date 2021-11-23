@@ -1,7 +1,7 @@
 import './App.css';
 import { useEffect, useState } from 'react';
 
-const RecipeID = "1010";
+const RecipeID = "2006";
 const URL = "http://127.0.0.1:3002/v1/Recipe/" + RecipeID;
 
 function App() {

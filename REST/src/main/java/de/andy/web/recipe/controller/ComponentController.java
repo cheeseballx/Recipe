@@ -29,68 +29,65 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RestController
 @RequestMapping("/v1/Components")
 @Tag(name = "Components", description = "Controlling the Components for specific Recipe")
-public class ComponentController{
+public class ComponentController {
 
-    @Autowired ComponentInterface ComponentDB;
-    @Autowired RecipeInterface RecipeDB;
-    @Autowired IngridentInterface IngridentDB;
+    @Autowired
+    ComponentInterface ComponentDB;
+    @Autowired
+    RecipeInterface RecipeDB;
+    @Autowired
+    IngridentInterface IngridentDB;
 
-    //GET ALL
-    @Operation( summary = "Show all Components as a list here", 
-                description = "no need for params. It just returns a list")
+    // GET ALL
+    @Operation(summary = "Show all Components as a list here", description = "no need for params. It just returns a list")
     @GetMapping(value = "", produces = "application/json")
-    @ApiResponse(responseCode = "200", description = "return Jsonlist" )
-    public List<Component> getAllComponents(){
+    @ApiResponse(responseCode = "200", description = "return Jsonlist")
+    public List<Component> getAllComponents() {
         return ComponentDB.findAll();
     }
 
-    //GET ONE
-    @Operation( summary = "Shows a Component comes by ID", 
-                description = "id for ")
-    @GetMapping(value="/{id}", produces = "application/json")
-    @ApiResponse(responseCode = "204",description = "ID is not found")
-    @ApiResponse(responseCode = "200",description = "found Component")
-	public ResponseEntity<Component> getComponent(@PathVariable Long id) {
+    // GET ONE
+    @Operation(summary = "Shows a Component comes by ID", description = "id for ")
+    @GetMapping(value = "/{id}", produces = "application/json")
+    @ApiResponse(responseCode = "204", description = "ID is not found")
+    @ApiResponse(responseCode = "200", description = "found Component")
+    public ResponseEntity<Component> getComponent(@PathVariable Long id) {
         Optional<Component> opt = ComponentDB.findById(id);
         if (opt.isPresent())
-            return new ResponseEntity<Component>(opt.get(),HttpStatus.OK);
+            return new ResponseEntity<Component>(opt.get(), HttpStatus.OK);
         else
             return new ResponseEntity<Component>(HttpStatus.NO_CONTENT);
     }
 
-    //POST ONE
-    @Operation( summary = "Adds a Component", 
-                description = "adding a Compinent to db")
+    // POST ONE
+    @Operation(summary = "Adds a Component", description = "adding a Compinent to db")
     @PostMapping(value = "", produces = "application/json")
-    @ApiResponse(responseCode = "200",description = "newly created ID gets returned")
-    @ApiResponse(responseCode = "400",description = "Some error in request")
-    public ResponseEntity<String> addComponent( @RequestParam Long recipe_id,
-                                                @RequestParam Long ingrident_id,
-                                                @RequestParam(required = false) Float amount) {
+    @ApiResponse(responseCode = "200", description = "newly created ID gets returned")
+    @ApiResponse(responseCode = "400", description = "Some error in request")
+    public ResponseEntity<String> addComponent(@RequestParam Long recipe_id, @RequestParam Long ingrident_id,
+            @RequestParam(required = false) Float amount) {
 
         Optional<Recipe> recipeOpt = RecipeDB.findById(recipe_id);
         Optional<Ingrident> ingridentOpt = IngridentDB.findById(ingrident_id);
 
-        JSONObject  obj = new JSONObject();
+        JSONObject obj = new JSONObject();
 
-        if (recipeOpt.isPresent() && ingridentOpt.isPresent()){
-            
-            Component component = new Component(recipeOpt.get(),ingridentOpt.get(),amount);
+        if (recipeOpt.isPresent() && ingridentOpt.isPresent()) {
+
+            Component component = new Component(recipeOpt.get(), ingridentOpt.get(), amount);
             Component returnComponent = ComponentDB.save(component);
 
-            obj.put("ID",returnComponent.getId());
-            obj.put("status",1);
-            obj.put("msg","object created successfully");
+            obj.put("ID", returnComponent.getId());
+            obj.put("status", 1);
+            obj.put("msg", "object created successfully");
 
-            return new ResponseEntity<>(obj.toString(),HttpStatus.OK);
-        }
-        else{
-            obj.put("status",0);
-            obj.put("msg","recipeid or ingrident id is missing or wrong or both");
-            return new ResponseEntity<>(obj.toString(),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(obj.toString(), HttpStatus.OK);
+        } else {
+            obj.put("status", 0);
+            obj.put("msg", "recipeid or ingrident id is missing or wrong or both");
+            return new ResponseEntity<>(obj.toString(), HttpStatus.BAD_REQUEST);
         }
 
     }
-
 
 }
