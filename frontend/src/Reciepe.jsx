@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const URL = "http://127.0.0.1:3002/v1/Recipe/";
 
-function Recipe(props) {
+function Recipe() {
 
     const id = useParams().id;
     const [data,setData] = useState({})
@@ -13,7 +13,7 @@ function Recipe(props) {
         fetch(URL + id)
             .then(response => response.json())
             .then(result => setData(result));
-  },[]);
+  },[id]);
 
   return (
     <div>

@@ -100,4 +100,7 @@ public class Recipe{
         this.description = description;
     }
 
+    //set main image
+    public 
+
 }

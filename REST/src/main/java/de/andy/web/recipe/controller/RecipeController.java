@@ -73,7 +73,6 @@ public class RecipeController{
         return new ResponseEntity<String>(returnRecipe.getId()+"",HttpStatus.OK);
     }
 
-    //UPDATE
     //UPDATE ONE
     @Operation (summary = "change a recipe by changing some informations")
     @PatchMapping(value = "", consumes = "application/json", produces = "application/json")
@@ -95,7 +94,7 @@ public class RecipeController{
         JSONObject ret = new JSONObject();
         ret.put("msg", "successfull changed");
         ret.put("status", 1);
-        //ret.put("newRecipe", returnRecipe);
+        ret.put("newRecipe", returnRecipe);
 
         return new ResponseEntity<String>(ret.toString(),HttpStatus.OK);
     }
