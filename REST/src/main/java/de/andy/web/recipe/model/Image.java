@@ -32,8 +32,8 @@ public class Image {
 
     // Replacement text of image
     @Column(nullable = true)
-    private String replace;
-    public String getReplace() { return this.replace;}
+    private String replacement;
+    public String getReplacement() { return this.replacement;}
 
     // Position in recipe
     @Column(nullable = true)
@@ -50,9 +50,15 @@ public class Image {
     @JsonIgnore
     private Recipe recipe;
 
+    // ============================
+    //  Functions / Constructions
+    // ============================
 
-    //Mapped by others
-    @OneToOne(mappedBy = "mainimage")
-    @JsonIgnore
-    private Recipe recipeMainImage;
+    protected Image() {};
+
+    public Image(String url, String name, String replacement){
+        this.name = name;
+        this.url = url;
+        this.replacement = replacement;
+    }
 }

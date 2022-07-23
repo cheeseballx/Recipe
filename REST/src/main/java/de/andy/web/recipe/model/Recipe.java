@@ -58,19 +58,13 @@ public class Recipe{
     private Integer waitingtime;
     public Integer getWaitingtime() { return this.waitingtime; }
 
-    // Main Image
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "mainimage_id", referencedColumnName = "id")
-    private Image mainimage;
-    public Image getMainimage() { return this.mainimage; }
-
     //======================================//
     //======= mapped by other classes ======// 
     //======================================//
 
     //components for recipe
-    @JsonProperty(access = Access.READ_ONLY)
     @OneToMany(mappedBy="recipe")
+    @JsonProperty(access = Access.READ_ONLY)
     private Set<Component> components;
     public Set<Component> getComponents() { return this.components; }
 
@@ -99,8 +93,5 @@ public class Recipe{
         this.longname = longname;
         this.description = description;
     }
-
-    //set main image
-    public 
 
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import de.andy.web.recipe.database.ComponentInterface;
 import de.andy.web.recipe.database.IngridentInterface;
@@ -27,6 +28,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
+@CrossOrigin(origins = "http://127.0.0.1:3002")
 @RequestMapping("/v1/Components")
 @Tag(name = "Components", description = "Controlling the Components for specific Recipe")
 public class ComponentController {

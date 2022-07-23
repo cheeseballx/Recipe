@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import de.andy.web.recipe.database.IngridentInterface;
 import de.andy.web.recipe.model.Ingrident;
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
+@CrossOrigin(origins = "http://127.0.0.1:3002")
 @RequestMapping("/v1/Ingrident")
 @Tag(name = "Ingridents", description = "Controlling the Ingridents")
 public class IngridentController{
