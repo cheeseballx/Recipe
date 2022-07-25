@@ -8,9 +8,13 @@ import de.andy.web.recipe.model.Recipe;
 
 //import java.util.List;
 import java.util.Optional;
+import java.io.File;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +40,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Image", description = "Controlling the Images")
 public class ImageController{
 
+    @Value("${custom.dir.img}")
+    private String imageDir;
+
+
+    
     @Autowired ImageInterface imageDB;
     @Autowired RecipeInterface recipeDB;
+
+    @Autowired
+    private HttpServletRequest request;
 
 
     //GET ONE
@@ -63,7 +75,7 @@ public class ImageController{
     public ResponseEntity<String> addImage  (   @RequestParam Long recipe_id, 
                                                 @RequestParam String name,
                                                 @RequestParam String replace,
-                                                @RequestPart("file") MultipartFile file){
+                                                @RequestPart(value="file", required = false) MultipartFile file){
         
         Optional<Recipe> optRecipe = recipeDB.findById(recipe_id);
         
@@ -76,7 +88,19 @@ public class ImageController{
             return new ResponseEntity<>(obj.toString(), HttpStatus.BAD_REQUEST);
         }
 
-        Image image = new Image("url", name, replace);
+        String path = null;
+
+        try{
+            path = imageDir + name + "_" + System.currentTimeMillis();
+            File dest = new File(path);
+            file.transferTo(dest);
+        }
+        catch(Exception e){
+            System.out.print("error");
+            System.out.println(e.toString());
+        }
+
+        Image image = new Image(optRecipe.get(), path, replace);
         Image imageReturn = imageDB.save(image);
 
         obj = new JSONObject();
@@ -88,3 +112,6 @@ public class ImageController{
 
     
 }
+
+
+

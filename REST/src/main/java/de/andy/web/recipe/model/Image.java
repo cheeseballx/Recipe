@@ -25,11 +25,6 @@ public class Image {
     private String url;
     public String getUrl() { return this.url;}
 
-    // Name
-    @Column(nullable = false)
-    private String name;
-    public String getName() { return this.name;}
-
     // Replacement text of image
     @Column(nullable = true)
     private String replacement;
@@ -56,8 +51,8 @@ public class Image {
 
     protected Image() {};
 
-    public Image(String url, String name, String replacement){
-        this.name = name;
+    public Image(Recipe recipe, String url, String replacement){
+        this.recipe = recipe;
         this.url = url;
         this.replacement = replacement;
     }
