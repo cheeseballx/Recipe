@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:3002")
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/v1/Components")
 @Tag(name = "Components", description = "Controlling the Components for specific Recipe")
 public class ComponentController {

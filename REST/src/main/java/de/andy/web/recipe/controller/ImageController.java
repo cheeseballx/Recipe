@@ -35,7 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:3002")
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/v1/Image")
 @Tag(name = "Image", description = "Controlling the Images")
 public class ImageController{

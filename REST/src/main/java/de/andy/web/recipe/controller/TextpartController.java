@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:3002")
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/v1/Textpart")
 @Tag(name = "Textpart", description = "Controlling the Textparts")
 public class TextpartController{

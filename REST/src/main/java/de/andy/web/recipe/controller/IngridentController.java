@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:3002")
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/v1/Ingrident")
 @Tag(name = "Ingridents", description = "Controlling the Ingridents")
 public class IngridentController{
