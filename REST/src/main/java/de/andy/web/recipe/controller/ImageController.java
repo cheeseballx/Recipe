@@ -91,7 +91,8 @@ public class ImageController{
         String path = null;
 
         try{
-            path = imageDir + name + "_" + System.currentTimeMillis();
+            //TODO make correct ending here
+            path = imageDir + name + "_" + System.currentTimeMillis() + ".png";
             File dest = new File(path);
             file.transferTo(dest);
         }
