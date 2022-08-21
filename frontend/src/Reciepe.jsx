@@ -15,10 +15,11 @@ function Recipe() {
             .then(result => setData(result));
   },[id]);
 
-  return (
+  return !data ? <div>wait</div> :(
     <div>
       <h1>{data.name}</h1>
       <h2>{data.longname}</h2>
+      {data.images && data.images.map(pic => <img src={"img"+pic.url} /> )}
       <h4>{data.description}</h4>
 
       {data.components && data.components.map(c=> {

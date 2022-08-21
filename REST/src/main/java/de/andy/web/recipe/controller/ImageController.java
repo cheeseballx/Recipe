@@ -5,14 +5,12 @@ import de.andy.web.recipe.database.ImageInterface;
 import de.andy.web.recipe.model.Image;
 import de.andy.web.recipe.model.Recipe;
 
-
-//import java.util.List;
 import java.util.Optional;
 import java.io.File;
 
 import javax.servlet.http.HttpServletRequest;
-
 import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -89,10 +87,14 @@ public class ImageController{
         }
 
         String path = null;
+        
+        String ending = file.getOriginalFilename().split("\\.")[1];
+        String fullName = name + "_" + System.currentTimeMillis() + "." + ending;
+        
+        //^ TODO check if there is an ending and give back serious error
 
         try{
-            //TODO make correct ending here
-            path = imageDir + name + "_" + System.currentTimeMillis() + ".png";
+            path = imageDir + fullName;
             File dest = new File(path);
             file.transferTo(dest);
         }
@@ -101,7 +103,7 @@ public class ImageController{
             System.out.println(e.toString());
         }
 
-        Image image = new Image(optRecipe.get(), path, replace);
+        Image image = new Image(optRecipe.get(), "/" + fullName, replace);
         Image imageReturn = imageDB.save(image);
 
         obj = new JSONObject();
