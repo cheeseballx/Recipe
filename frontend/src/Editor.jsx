@@ -16,7 +16,8 @@ function Editor (){
   const [ fast, setFast ] = useState("");
   const [ doingTime, setDoingTime] = useState(0);
   const [ waitingTime, setWaitingTime] = useState(0);
-  const [ mainImage, setMainImage ] = useState("");
+  const [ images, setImages ] = useState("");
+  const [ uploadImg, setUploadImg] = useState({});
 
   function load(){
     fetch(`${URL}/${id}`)
@@ -28,7 +29,7 @@ function Editor (){
         setFast(data.fastrecipe         || "");
         setDoingTime(data.doingtime     || 0);
         setWaitingTime(data.waitingtime || 0);
-        setMainImage(data.mainImage );
+        setImages(data.images );
       });
   }
 
@@ -43,6 +44,7 @@ function Editor (){
       waitingtime: waitingTime
     };
 
+
     const header = {
       "content-type": "application/json"
     };
@@ -54,6 +56,23 @@ function Editor (){
         load();
       });
   }
+
+  const uploadPicture = (e) => {
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
+
+    const data = fetch("http://localhost:3000/upload/post", {
+      method: "post",
+      headers: { "Content-Type": "multipart/form-data" },
+      body: formData,
+    });
+    /*const uploadedImage = await data.json();
+    if (uploadedImage) {
+      console.log("Successfully uploaded image");
+    } else {
+      console.log("Error Found");
+    }*/
+  };
 
   //just load the recipe on pageload
   useEffect(load, [id]);
@@ -80,6 +99,11 @@ function Editor (){
 
       <p>Waiting Time</p>
       <input type="number" value={waitingTime} onChange={(e) => setWaitingTime(e.target.value)} />
+
+      <p>Images</p>
+      <img src={uploadImg.prev} />
+      <input type="file" onChange={(e) => setUploadImg({prev: URL.createObjectURL(e.target.files[0]) ,url: e.target.files[0]})} />
+
 
       <p>Update Recipe</p>
       <button onClick={save}>Save</button>
