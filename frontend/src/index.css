@@ -11,3 +11,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Oerwrite this image slider image to always see the images*/
+.rsis-image, .rsis-image + div{
+  background-size: contain !important;
+  background-repeat: no-repeat;
+}
+

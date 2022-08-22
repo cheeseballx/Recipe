@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import './creator.css'
 
-const URL = "http://127.0.0.1:3002/v1/Recipe";
+const URL = "http://127.0.0.1:3002/v1";
 
 function Editor (){
 
@@ -17,10 +17,10 @@ function Editor (){
   const [ doingTime, setDoingTime] = useState(0);
   const [ waitingTime, setWaitingTime] = useState(0);
   const [ images, setImages ] = useState("");
-  const [ uploadImg, setUploadImg] = useState({});
+  const [ uploadImg, setUploadImg] = useState({name:"",replace:""});
 
   function load(){
-    fetch(`${URL}/${id}`)
+    fetch(`${URL}/Recipe/${id}`)
       .then(response => response.json())
       .then(data =>{
         setName(data.name               || "");
@@ -49,7 +49,7 @@ function Editor (){
       "content-type": "application/json"
     };
     
-    fetch(`${URL}`, {method:"PATCH",  headers:header, body: JSON.stringify(body)})
+    fetch(`${URL}/Recipe`, {method:"PATCH",  headers:header, body: JSON.stringify(body)})
       .then(response => response.json())
       .then(data => {
         console.log(data);
@@ -57,21 +57,27 @@ function Editor (){
       });
   }
 
-  const uploadPicture = (e) => {
-    const formData = new FormData();
-    formData.append("file", e.target.files[0]);
+  const updatePrev = (e) => {
+    setUploadImg({
+      prev: window.URL.createObjectURL(e.target.files[0]) ,
+      url: e.target.files[0],
+      name: "",
+      replace: "" });
+  }
 
-    const data = fetch("http://localhost:3000/upload/post", {
-      method: "post",
-      headers: { "Content-Type": "multipart/form-data" },
+  const uploadPicture = () => {
+
+    if (!uploadImg || !uploadImg.url)
+      return;
+
+    const formData = new FormData();
+    formData.append("file", uploadImg.url);
+
+    const data = fetch(`${URL}/Image?recipe_id=${id}&name=${uploadImg.name}&replace=${uploadImg.replace}`, {
+      method: "POST",
+      headers: { /*"Content-Type": "multipart/form-data" */ },
       body: formData,
-    });
-    /*const uploadedImage = await data.json();
-    if (uploadedImage) {
-      console.log("Successfully uploaded image");
-    } else {
-      console.log("Error Found");
-    }*/
+    }).catch(e=> console.log("err"))
   };
 
   //just load the recipe on pageload
@@ -101,9 +107,11 @@ function Editor (){
       <input type="number" value={waitingTime} onChange={(e) => setWaitingTime(e.target.value)} />
 
       <p>Images</p>
-      <img src={uploadImg.prev} />
-      <input type="file" onChange={(e) => setUploadImg({prev: URL.createObjectURL(e.target.files[0]) ,url: e.target.files[0]})} />
-
+      <img height="150" src={uploadImg.prev} />
+      <input type="file" onChange={ updatePrev } />
+      <input type="text" placeholder='name' value={uploadImg.name} onChange={(e)=> setUploadImg({...uploadImg, name:e.target.value}) } />
+      <input type="text" placeholder='replace' value={uploadImg.replace} onChange={(e)=> setUploadImg({...uploadImg, replace:e.target.value})} />
+      <button onClick={uploadPicture}>upload</button>
 
       <p>Update Recipe</p>
       <button onClick={save}>Save</button>
