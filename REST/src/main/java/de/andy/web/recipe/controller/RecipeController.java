@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,7 +64,7 @@ public class RecipeController{
     @PostMapping(value = "", produces = "application/json")
     @ApiResponse(responseCode = "200",description = "newly created ID gets returned")
     @ApiResponse(responseCode = "400",description = "Some error in request")
-    public ResponseEntity<String> addIngridient(@RequestParam String name,
+    public ResponseEntity<String> addRecipe(@RequestParam String name,
                                                 @RequestParam(required = false) String longname,
                                                 @RequestParam(required = false) String description){
         
@@ -97,5 +98,20 @@ public class RecipeController{
         ret.put("newRecipe", returnRecipe);
 
         return new ResponseEntity<String>(ret.toString(),HttpStatus.OK);
+    }
+
+    //DELETE ONE
+    @Operation (summary =  "delete a Recipe")
+    @DeleteMapping(value = "/{id}", produces = "application/json")
+    @ApiResponse(responseCode = "200",description = "its deleted")
+    @ApiResponse(responseCode = "400",description = "Some error in request")
+    ResponseEntity<String> deleteRecipe(@PathVariable Long id){
+        Optional<Recipe> opt = RecipeDB.findById(id);
+        if (!opt.isPresent())
+            return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        
+        RecipeDB.deleteById(id);
+        
+        return new ResponseEntity<String>(id+"x",HttpStatus.OK);
     }
 }

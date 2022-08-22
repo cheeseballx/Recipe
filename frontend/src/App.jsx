@@ -1,6 +1,6 @@
 import React from 'react';
-import RecipesList from './RecipesList';
 import { Link } from 'react-router-dom';
+import RecipesList from './RecipesList';
 
 const App = () => {
     return <div>
