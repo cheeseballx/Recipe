@@ -17,6 +17,8 @@ function Editor (){
   const [ doingTime, setDoingTime] = useState(0);
   const [ waitingTime, setWaitingTime] = useState(0);
   const [ images, setImages ] = useState("");
+  const [ ingridents, setIngridents] = useState([]);
+  const [ ingridentEdit, setIngridentEdit ] = useState("");
   const [ uploadImg, setUploadImg] = useState({name:"",replace:""});
 
   function load(){
@@ -31,6 +33,10 @@ function Editor (){
         setWaitingTime(data.waitingtime || 0);
         setImages(data.images );
       });
+
+      fetch(`${URL}/Ingrident`)
+        .then(response => response.json())
+        .then(data => setIngridents(data) );
   }
 
   function save(){
@@ -105,6 +111,10 @@ function Editor (){
 
       <p>Waiting Time</p>
       <input type="number" value={waitingTime} onChange={(e) => setWaitingTime(e.target.value)} />
+
+      <p>Adding Ingridents</p>
+      <input type="number" value={ingridentEdit} onChange={(e) => setIngridentEdit(e.target.value)} />
+      <select> { ingridents.map( x =>  <option key={x.id}>({x.unit}){x.name}</option> ) } </select>
 
       <p>Images</p>
       <img height="150" src={uploadImg.prev} />
