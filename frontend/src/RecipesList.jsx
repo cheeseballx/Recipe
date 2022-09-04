@@ -28,6 +28,7 @@ function RecipesList() {
     <ul>
       { list && list.map(x => <li key={x.id}>
         <Link to={ "/" + x.id }>{`${x.name} (${x.id})`}</Link>
+        <Link to={ "/edit/" + x.id }><button> E</button></Link>
         <button style={{marginLeft:"15px"}} onClick={() => del(x.id) } >X</button>
       </li>) }
     </ul> 
