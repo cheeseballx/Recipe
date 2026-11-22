@@ -3,7 +3,7 @@ import { ApiError } from './errors.js';
 import { RecipeRepository } from './repository.js';
 import { recipesRouter } from './routes/recipes.js';
 import { imagesRouter } from './routes/images.js';
-import { openapi } from './openapi.js';
+import { loadOpenApi } from './openapi.js';
 
 /**
  * Baut die Express-App. Wird von index.js und den Tests verwendet.
@@ -13,6 +13,7 @@ import { openapi } from './openapi.js';
 export function createApp({ db, images, maxImageBytes = 10 * 1024 * 1024, corsOrigins = [] }) {
   const app = express();
   const repo = new RecipeRepository(db);
+  const openapi = loadOpenApi();
 
   app.disable('x-powered-by');
   app.set('json spaces', 2);
@@ -34,7 +35,8 @@ export function createApp({ db, images, maxImageBytes = 10 * 1024 * 1024, corsOr
   app.use(express.json({ limit: '1mb' }));
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-  app.get('/api/openapi.json', (req, res) => res.json(openapi));
+  app.get('/api/openapi.yaml', (req, res) => res.type('application/yaml; charset=utf-8').send(openapi.yaml));
+  app.get('/api/openapi.json', (req, res) => res.json(openapi.json));
   app.get('/api/tags', (req, res) => res.json(repo.tags()));
   app.use('/api/recipes/:id/images', imagesRouter({ repo, images, maxImageBytes }));
   app.use('/api/recipes', recipesRouter({ repo, images }));

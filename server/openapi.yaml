@@ -1,0 +1,682 @@
+openapi: 3.1.0
+
+info:
+  title: Rezepte-API
+  version: 1.0.0
+  summary: Rezepte mit Texten und Bildern verwalten.
+  description: |
+    REST-API für eine Rezepte-App. Rezepte bestehen aus Texten (Titel, Beschreibung,
+    Zutaten, Arbeitsschritte, Tags) und beliebig vielen Bildern.
+
+    - Alle Requests und Responses sind JSON, außer dem Bild-Upload (`multipart/form-data`)
+      und den Bilddateien selbst.
+    - Fehler haben immer die Form `{ "error": { "code", "message", "details?" } }`.
+    - Diese Beschreibung ist unter `/api/openapi.yaml` und `/api/openapi.json` abrufbar.
+  license:
+    name: GPL-3.0-or-later
+    identifier: GPL-3.0-or-later
+
+servers:
+  - url: http://localhost:3002
+    description: Lokale Entwicklung
+
+tags:
+  - name: Rezepte
+    description: Rezepte anlegen, lesen, ändern und löschen
+  - name: Bilder
+    description: Bilder eines Rezepts hochladen und verwalten
+  - name: Sonstiges
+
+paths:
+  /api/recipes:
+    get:
+      tags: [Rezepte]
+      operationId: listRecipes
+      summary: Rezepte auflisten
+      description: |
+        Liefert eine Seite mit Rezept-Zusammenfassungen (ohne Zutaten, Schritte und Bildliste).
+        Suche und Tag-Filter ignorieren Groß-/Kleinschreibung, auch bei Umlauten.
+      parameters:
+        - name: q
+          in: query
+          description: Suchbegriff – durchsucht Titel, Untertitel, Beschreibung, Zutaten und Tags
+          schema: { type: string }
+          example: mehl
+        - name: tag
+          in: query
+          description: Nur Rezepte mit genau diesem Tag
+          schema: { type: string }
+          example: Frühstück
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, oldest, updated, title]
+            default: newest
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: Eine Seite mit Rezepten
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecipeList' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+    post:
+      tags: [Rezepte]
+      operationId: createRecipe
+      summary: Rezept anlegen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecipeInput' }
+            examples:
+              vollständig:
+                $ref: '#/components/examples/Pfannkuchen'
+              minimal:
+                summary: Nur Pflichtfeld und Kurzformen
+                value:
+                  title: Rührei
+                  ingredients: [3 Eier, Prise Salz]
+                  steps: [Eier verquirlen., In der Pfanne stocken lassen.]
+      responses:
+        '201':
+          description: Rezept wurde angelegt
+          headers:
+            Location:
+              description: URL des neuen Rezepts
+              schema: { type: string, example: /api/recipes/1 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /api/recipes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/RecipeId'
+
+    get:
+      tags: [Rezepte]
+      operationId: getRecipe
+      summary: Ein Rezept lesen
+      responses:
+        '200':
+          description: Das Rezept mit Zutaten, Schritten und Bildern
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      tags: [Rezepte]
+      operationId: replaceRecipe
+      summary: Rezept komplett ersetzen
+      description: Nicht übergebene Felder werden geleert. Bilder bleiben erhalten.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecipeInput' }
+      responses:
+        '200':
+          description: Das aktualisierte Rezept
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Rezepte]
+      operationId: updateRecipe
+      summary: Rezept teilweise ändern
+      description: |
+        Nur übergebene Felder werden geändert. Listen (`tags`, `ingredients`, `steps`)
+        werden dabei immer komplett ersetzt. `null` leert ein Feld.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecipePatch' }
+            examples:
+              titelbild:
+                summary: Titelbild setzen
+                value: { coverImageId: 2 }
+              schritte:
+                summary: Titel und Schritte ändern
+                value:
+                  title: Pfannkuchen deluxe
+                  steps: [Teig rühren., Ausbacken., Mit Zimt und Zucker servieren.]
+      responses:
+        '200':
+          description: Das aktualisierte Rezept
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Rezepte]
+      operationId: deleteRecipe
+      summary: Rezept löschen
+      description: Löscht das Rezept inklusive aller Bilder und Bilddateien.
+      responses:
+        '204': { description: Gelöscht }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/recipes/{id}/images:
+    parameters:
+      - $ref: '#/components/parameters/RecipeId'
+
+    get:
+      tags: [Bilder]
+      operationId: listImages
+      summary: Bilder eines Rezepts
+      responses:
+        '200':
+          description: Bilder in ihrer Reihenfolge
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Image' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    post:
+      tags: [Bilder]
+      operationId: uploadImages
+      summary: Bild(er) hochladen
+      description: |
+        Lädt 1–10 Bilder hoch. Das Format wird anhand des Dateiinhalts erkannt
+        (JPEG, PNG, WebP, GIF, AVIF), nicht anhand von Dateiname oder Content-Type.
+        Neue Bilder werden hinten angehängt.
+
+        Bei **einer** Datei ist die Antwort ein Bild-Objekt, bei **mehreren** eine Liste.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  description: Eine oder mehrere Bilddateien (Feld mehrfach senden)
+                  type: array
+                  minItems: 1
+                  maxItems: 10
+                  items:
+                    type: string
+                    contentMediaType: application/octet-stream
+                caption:
+                  description: Bildunterschrift für alle hochgeladenen Bilder
+                  type: string
+                  maxLength: 500
+            encoding:
+              image:
+                contentType: image/jpeg, image/png, image/webp, image/gif, image/avif
+      responses:
+        '201':
+          description: Hochgeladen
+          headers:
+            Location:
+              description: URL des (ersten) neuen Bildes
+              schema: { type: string, example: /api/recipes/1/images/3 }
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Image'
+                  - type: array
+                    items: { $ref: '#/components/schemas/Image' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413':
+          description: Datei zu groß (Standard-Limit 10 MB pro Bild)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '415':
+          description: Kein unterstütztes Bildformat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/recipes/{id}/images/{imageId}:
+    parameters:
+      - $ref: '#/components/parameters/RecipeId'
+      - $ref: '#/components/parameters/ImageId'
+
+    get:
+      tags: [Bilder]
+      operationId: getImage
+      summary: Bild-Metadaten lesen
+      responses:
+        '200':
+          description: Das Bild
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Image' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      tags: [Bilder]
+      operationId: updateImage
+      summary: Bildunterschrift oder Reihenfolge ändern
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImagePatch' }
+            example: { caption: Nahaufnahme, position: 1 }
+      responses:
+        '200':
+          description: Das aktualisierte Bild
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Image' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Bilder]
+      operationId: deleteImage
+      summary: Bild löschen
+      description: |
+        Löscht Bild und Datei. War es das Titelbild, ist danach wieder das erste Bild
+        das Titelbild.
+      responses:
+        '204': { description: Gelöscht }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /uploads/{filename}:
+    get:
+      tags: [Bilder]
+      operationId: getImageFile
+      summary: Bilddatei abrufen
+      description: Die eigentliche Bilddatei. Der Pfad steht im Feld `url` eines Bildes.
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema: { type: string }
+          example: 7be89b8b-e158-42b9-86d6-28b803c2a8e2.png
+      responses:
+        '200':
+          description: Die Bilddatei (lange cachebar, Dateinamen ändern sich nie)
+          content:
+            image/*:
+              schema:
+                type: string
+                contentMediaType: image/*
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/tags:
+    get:
+      tags: [Sonstiges]
+      operationId: listTags
+      summary: Alle Tags
+      description: Alle verwendeten Tags mit der Anzahl Rezepte, häufigste zuerst.
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TagCount' }
+
+  /api/health:
+    get:
+      tags: [Sonstiges]
+      operationId: health
+      summary: Health-Check
+      responses:
+        '200':
+          description: API läuft
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { const: ok }
+
+  /api/openapi.yaml:
+    get:
+      tags: [Sonstiges]
+      operationId: getOpenApiYaml
+      summary: Diese API-Beschreibung als YAML
+      responses:
+        '200':
+          description: OpenAPI 3.1
+          content:
+            application/yaml:
+              schema: { type: string }
+
+  /api/openapi.json:
+    get:
+      tags: [Sonstiges]
+      operationId: getOpenApiJson
+      summary: Diese API-Beschreibung als JSON
+      responses:
+        '200':
+          description: OpenAPI 3.1
+          content:
+            application/json:
+              schema: { type: object }
+
+components:
+  parameters:
+    RecipeId:
+      name: id
+      in: path
+      required: true
+      description: ID des Rezepts
+      schema: { type: integer, minimum: 1 }
+    ImageId:
+      name: imageId
+      in: path
+      required: true
+      description: ID des Bildes
+      schema: { type: integer, minimum: 1 }
+
+  responses:
+    BadRequest:
+      description: Ungültige Eingabe oder Parameter
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error:
+              code: validation_error
+              message: Ungültige Eingabe
+              details:
+                - { field: title, message: ist ein Pflichtfeld }
+                - { field: 'steps[0].text', message: ist ein Pflichtfeld }
+    NotFound:
+      description: Nicht gefunden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error: { code: not_found, message: Rezept nicht gefunden }
+
+  schemas:
+    # ---------- Eingabe ----------
+
+    RecipeInput:
+      description: Rezept zum Anlegen (POST) oder kompletten Ersetzen (PUT). Nur `title` ist Pflicht.
+      allOf:
+        - $ref: '#/components/schemas/RecipePatch'
+      required: [title]
+
+    RecipePatch:
+      description: |
+        Alle Felder eines Rezepts, jeweils optional (für PATCH).
+        Nur-Lese-Felder aus einer Antwort (`id`, `images`, …) dürfen mitgeschickt werden und
+        werden ignoriert – ein gelesenes Rezept kann also direkt wieder gespeichert werden.
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        subtitle:
+          type: [string, 'null']
+          maxLength: 300
+        description:
+          type: [string, 'null']
+          maxLength: 20000
+        servings:
+          description: Anzahl Portionen
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 1000
+        prepMinutes:
+          description: Arbeitszeit in Minuten
+          type: [integer, 'null']
+          minimum: 0
+        waitMinutes:
+          description: Warte-, Ruhe- oder Backzeit in Minuten
+          type: [integer, 'null']
+          minimum: 0
+        tags:
+          description: Doppelte Tags (ohne Beachtung von Groß-/Kleinschreibung) werden entfernt
+          type: array
+          maxItems: 30
+          items: { type: string, minLength: 1, maxLength: 50 }
+        ingredients:
+          description: 'Zutaten in Reihenfolge. Kurzform: `"Salz"` entspricht `{ "name": "Salz" }`.'
+          type: array
+          maxItems: 200
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Ingredient'
+              - { type: string, minLength: 1, maxLength: 200 }
+        steps:
+          description: 'Arbeitsschritte in Reihenfolge. Kurzform: `"Rühren"` entspricht `{ "text": "Rühren" }`.'
+          type: array
+          maxItems: 200
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/StepInput'
+              - { type: string, minLength: 1, maxLength: 10000 }
+        coverImageId:
+          description: ID eines Bildes **dieses** Rezepts als Titelbild. `null` = erstes Bild.
+          type: [integer, 'null']
+          minimum: 1
+        id: { readOnly: true, description: wird ignoriert }
+        totalMinutes: { readOnly: true, description: wird ignoriert }
+        images: { readOnly: true, description: wird ignoriert }
+        coverImage: { readOnly: true, description: wird ignoriert }
+        createdAt: { readOnly: true, description: wird ignoriert }
+        updatedAt: { readOnly: true, description: wird ignoriert }
+
+    ImagePatch:
+      type: object
+      additionalProperties: false
+      properties:
+        caption:
+          type: [string, 'null']
+          maxLength: 500
+        position:
+          description: Neue Position, 1 = erstes Bild. Die anderen Bilder rücken nach.
+          type: integer
+          minimum: 1
+        id: { readOnly: true, description: wird ignoriert }
+        url: { readOnly: true, description: wird ignoriert }
+        mimeType: { readOnly: true, description: wird ignoriert }
+        size: { readOnly: true, description: wird ignoriert }
+        originalName: { readOnly: true, description: wird ignoriert }
+        createdAt: { readOnly: true, description: wird ignoriert }
+
+    Ingredient:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200, examples: [Mehl] }
+        amount:
+          description: Menge, Kommazahlen erlaubt
+          type: [number, 'null']
+          minimum: 0
+          examples: [200, 0.5]
+        unit: { type: [string, 'null'], maxLength: 50, examples: [g] }
+        note: { type: [string, 'null'], maxLength: 500, examples: [Type 405] }
+
+    StepInput:
+      type: object
+      required: [text]
+      properties:
+        title: { type: [string, 'null'], maxLength: 200, examples: [Teig] }
+        text: { type: string, minLength: 1, maxLength: 10000 }
+
+    # ---------- Ausgabe ----------
+
+    Step:
+      type: object
+      required: [number, title, text]
+      properties:
+        number: { type: integer, minimum: 1, description: Laufende Nummer }
+        title: { type: [string, 'null'] }
+        text: { type: string }
+
+    Image:
+      type: object
+      required: [id, url, caption, position, mimeType, size, originalName, createdAt]
+      properties:
+        id: { type: integer }
+        url:
+          description: Pfad zur Bilddatei, relativ zur API
+          type: string
+          examples: [/uploads/7be89b8b-e158-42b9-86d6-28b803c2a8e2.jpg]
+        caption: { type: [string, 'null'] }
+        position: { type: integer, minimum: 1 }
+        mimeType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp, image/gif, image/avif]
+        size: { type: integer, description: Dateigröße in Bytes }
+        originalName: { type: [string, 'null'], description: Ursprünglicher Dateiname }
+        createdAt: { type: string, format: date-time }
+
+    ImageRef:
+      description: Kurzform eines Bildes, z. B. für das Titelbild
+      type: [object, 'null']
+      required: [id, url, caption]
+      properties:
+        id: { type: integer }
+        url: { type: string }
+        caption: { type: [string, 'null'] }
+
+    RecipeSummary:
+      type: object
+      required: [id, title, subtitle, description, servings, prepMinutes, waitMinutes, totalMinutes,
+                 tags, coverImage, imageCount, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        subtitle: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        servings: { type: [integer, 'null'] }
+        prepMinutes: { type: [integer, 'null'] }
+        waitMinutes: { type: [integer, 'null'] }
+        totalMinutes:
+          description: prepMinutes + waitMinutes (`null`, wenn beide fehlen)
+          type: [integer, 'null']
+        tags:
+          type: array
+          items: { type: string }
+        coverImage: { $ref: '#/components/schemas/ImageRef' }
+        imageCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Recipe:
+      type: object
+      required: [id, title, subtitle, description, servings, prepMinutes, waitMinutes, totalMinutes,
+                 tags, ingredients, steps, images, coverImageId, coverImage, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        subtitle: { type: [string, 'null'] }
+        description: { type: [string, 'null'] }
+        servings: { type: [integer, 'null'] }
+        prepMinutes: { type: [integer, 'null'] }
+        waitMinutes: { type: [integer, 'null'] }
+        totalMinutes: { type: [integer, 'null'] }
+        tags:
+          type: array
+          items: { type: string }
+        ingredients:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Ingredient'
+            required: [name, amount, unit, note]
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/Step' }
+        images:
+          type: array
+          items: { $ref: '#/components/schemas/Image' }
+        coverImageId:
+          description: Explizit gesetztes Titelbild (oder `null`)
+          type: [integer, 'null']
+        coverImage:
+          description: Tatsächliches Titelbild – `coverImageId` oder sonst das erste Bild
+          $ref: '#/components/schemas/ImageRef'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RecipeList:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/RecipeSummary' }
+        total: { type: integer, description: Anzahl aller Treffer (ohne limit/offset) }
+        limit: { type: integer }
+        offset: { type: integer }
+
+    TagCount:
+      type: object
+      required: [name, count]
+      properties:
+        name: { type: string }
+        count: { type: integer }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [validation_error, invalid_json, not_found, payload_too_large,
+                     unsupported_media_type, internal_error]
+            message: { type: string }
+            details:
+              description: Nur bei Validierungsfehlern
+              type: array
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field: { type: string, examples: ['ingredients[2].name'] }
+                  message: { type: string }
+
+  examples:
+    Pfannkuchen:
+      summary: Vollständiges Rezept
+      value:
+        title: Pfannkuchen
+        subtitle: Wie bei Oma
+        description: Dünn, goldbraun und schnell gemacht.
+        servings: 2
+        prepMinutes: 15
+        waitMinutes: 10
+        tags: [Frühstück, Süß]
+        ingredients:
+          - { name: Mehl, amount: 200, unit: g, note: Type 405 }
+          - { name: Milch, amount: 300, unit: ml }
+          - { name: Eier, amount: 2 }
+          - Prise Salz
+        steps:
+          - { title: Teig, text: Alles glatt verrühren und 10 Minuten quellen lassen. }
+          - In einer heißen Pfanne mit etwas Butter von beiden Seiten ausbacken.

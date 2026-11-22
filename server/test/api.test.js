@@ -201,4 +201,9 @@ test('CORS und OpenAPI', async () => {
 
   const spec = await api('GET', '/api/openapi.json');
   assert.equal(spec.body.openapi, '3.1.0');
+
+  const yamlRes = await fetch(base + '/api/openapi.yaml');
+  assert.equal(yamlRes.status, 200);
+  assert.match(yamlRes.headers.get('content-type'), /^application\/yaml/);
+  assert.match(await yamlRes.text(), /^openapi: 3\.1\.0/);
 });

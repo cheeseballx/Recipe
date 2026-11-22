@@ -25,6 +25,19 @@ Datenbank und Bilder landen in `server/data/` (`recipes.db`, `uploads/`).
 | `MAX_IMAGE_MB` | `10` | Max. Größe pro Bild |
 | `CORS_ORIGINS` | `http://localhost:3000,http://localhost:5173` | Erlaubte Frontend-Origins (`*` = alle) |
 
+## API-Beschreibung (OpenAPI 3.1)
+
+Die vollständige Beschreibung aller Endpunkte, Felder und Fehler steht in
+[`server/openapi.yaml`](server/openapi.yaml). Der laufende Server liefert sie aus unter:
+
+- `http://localhost:3002/api/openapi.yaml`
+- `http://localhost:3002/api/openapi.json`
+
+Die Datei lässt sich z. B. in Postman, Insomnia oder https://editor.swagger.io importieren
+oder zum Generieren eines Clients verwenden. Die Tests (`test/openapi.test.js`) prüfen jede
+Antwort der API gegen die Schemas in der YAML. Wenn sich die API ändert, muss die YAML
+mitgeändert werden, sonst schlagen die Tests fehl.
+
 ## Endpunkte
 
 | Methode | Pfad | Beschreibung |
@@ -42,7 +55,8 @@ Datenbank und Bilder landen in `server/data/` (`recipes.db`, `uploads/`).
 | `DELETE` | `/api/recipes/:id/images/:imageId` | Bild löschen |
 | `GET` | `/uploads/:datei` | Die eigentliche Bilddatei (= `url` eines Bildes) |
 | `GET` | `/api/tags` | Alle Tags mit Anzahl |
-| `GET` | `/api/openapi.json` | OpenAPI-3.1-Beschreibung (z. B. in editor.swagger.io oder Postman importieren) |
+| `GET` | `/api/openapi.yaml` | OpenAPI-3.1-Beschreibung als YAML |
+| `GET` | `/api/openapi.json` | Dieselbe Beschreibung als JSON |
 
 ### Rezept-Objekt
 
@@ -117,7 +131,10 @@ server/
     repository.js   Datenzugriff (Rezepte, Zutaten, Schritte, Tags, Bilder)
     validation.js   Eingabeprüfung
     images.js       Speichern/Prüfen der Bilddateien
-    openapi.js      API-Beschreibung
+    openapi.js      Lädt openapi.yaml
     routes/         recipes.js, images.js
-  test/api.test.js
+  test/
+    api.test.js       Verhalten der API
+    openapi.test.js   API-Antworten gegen openapi.yaml prüfen
+  openapi.yaml      API-Beschreibung (OpenAPI 3.1)
 ```
