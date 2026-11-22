@@ -25,6 +25,36 @@ Datenbank und Bilder landen in `server/data/` (`recipes.db`, `uploads/`).
 | `MAX_IMAGE_MB` | `10` | Max. Größe pro Bild |
 | `CORS_ORIGINS` | `http://localhost:3000,http://localhost:5173` | Erlaubte Frontend-Origins (`*` = alle) |
 
+## Mit Docker starten (Server)
+
+Voraussetzung: Docker mit Compose-Plugin (`docker compose version`).
+
+```bash
+git clone -b node-express-api https://github.com/cheeseballx/Recipe.git
+cd Recipe
+docker compose up -d --build
+```
+
+Die API läuft dann auf Port `3002`: `http://<server>:3002/api/health`.
+Datenbank und Bilder liegen im Docker-Volume `recipe_recipe-data` und bleiben bei Neustarts und Updates erhalten.
+
+| Aufgabe | Befehl |
+|---|---|
+| Status / Healthcheck | `docker compose ps` |
+| Logs ansehen | `docker compose logs -f` |
+| Stoppen | `docker compose down` |
+| Update einspielen | `git pull && docker compose up -d --build` |
+| Backup nach `./backup/` | `docker compose cp recipe-api:/app/data ./backup` |
+| Alles inkl. Daten löschen | `docker compose down -v` ⚠️ |
+
+Einstellungen über eine `.env`-Datei neben `docker-compose.yml` (oder Umgebungsvariablen):
+
+```env
+PORT=8080
+CORS_ORIGINS=https://rezepte.example.org
+MAX_IMAGE_MB=20
+```
+
 ## API-Beschreibung (OpenAPI 3.1)
 
 Die vollständige Beschreibung aller Endpunkte, Felder und Fehler steht in
@@ -122,7 +152,9 @@ gesendete Dateityp wird nicht geglaubt. Dateien bekommen zufällige Namen.
 ## Aufbau
 
 ```
+docker-compose.yml  Start mit Docker
 server/
+  Dockerfile
   src/
     index.js        Start (Port, DB öffnen)
     app.js          Express-App, CORS, Fehlerbehandlung

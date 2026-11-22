@@ -1,0 +1,18 @@
+services:
+  recipe-api:
+    build: ./server
+    image: recipe-api:latest
+    container_name: recipe-api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3002}:3002"
+    environment:
+      # Erlaubte Frontend-Adressen (Komma-getrennt, "*" = alle)
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      MAX_IMAGE_MB: ${MAX_IMAGE_MB:-10}
+    volumes:
+      # Datenbank + hochgeladene Bilder bleiben bei Updates/Neustarts erhalten
+      - recipe-data:/app/data
+
+volumes:
+  recipe-data:
